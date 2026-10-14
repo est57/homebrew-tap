@@ -1,0 +1,60 @@
+name: update
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update
+  cancel-in-progress: false
+
+jobs:
+  echoproof:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Find the latest release
+        id: latest
+        run: |
+          tag="$(curl -fsSLI -o /dev/null -w '%{url_effective}' https://github.com/est57/echoproof/releases/latest)"
+          tag="${tag##*/}"
+          [[ "$tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "unexpected tag $tag"; exit 1; }
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+      - name: Regenerate the formula
+        env:
+          TAG: ${{ steps.latest.outputs.tag }}
+        run: |
+          mkdir -p dist
+          for target in aarch64-apple-darwin x86_64-apple-darwin aarch64-unknown-linux-gnu x86_64-unknown-linux-gnu; do
+            curl -fsSL -o "dist/echoproof-$TAG-$target.tar.gz.sha256" \
+              "https://github.com/est57/echoproof/releases/download/$TAG/echoproof-$TAG-$target.tar.gz.sha256"
+          done
+          python3 scripts/formula.py "$TAG" dist > Formula/echoproof.rb
+          rm -rf dist
+      - name: Install and test with Homebrew
+        run: |
+          eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
+          brew tap est57/tap "$GITHUB_WORKSPACE"
+          cp Formula/echoproof.rb "$(brew --repository est57/tap)/Formula/echoproof.rb"
+          brew install est57/tap/echoproof
+          brew test est57/tap/echoproof
+          brew audit --strict est57/tap/echoproof
+      - name: Commit when the formula changed
+        env:
+          TAG: ${{ steps.latest.outputs.tag }}
+        run: |
+          git add Formula/echoproof.rb
+          if git diff --cached --quiet; then
+            echo "formula already at $TAG"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "echoproof ${TAG#v}"
+          git push
