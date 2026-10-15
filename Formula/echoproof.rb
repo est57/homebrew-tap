@@ -3,27 +3,27 @@ class Echoproof < Formula
   homepage "https://github.com/est57/echoproof"
   license any_of: ["MIT", "Apache-2.0"]
 
-  base = "https://github.com/est57/echoproof/releases/download/v0.2.0/echoproof-v0.2.0"
+  base = "https://github.com/est57/echoproof/releases/download/v0.2.1/echoproof-v0.2.1"
 
   on_macos do
     on_arm do
       url "#{base}-aarch64-apple-darwin.tar.gz"
-      sha256 "dddb2f5dbf28c96117f8042e93d54361790984d923c00fff1df2496aa724016c"
+      sha256 "4d2b3d6363f4a6ecb38b912264599410e5dbd29c077941498429f76e5badd4ea"
     end
     on_intel do
       url "#{base}-x86_64-apple-darwin.tar.gz"
-      sha256 "2130e846cbb878b49f180a76c6b1543bf1cd08e5b5f7b11739078fa4d8428808"
+      sha256 "d14451d81f613bfe32eaf090635d3f0613c8e22ac30723a3bee19b10ae97053b"
     end
   end
 
   on_linux do
     on_arm do
       url "#{base}-aarch64-unknown-linux-gnu.tar.gz"
-      sha256 "b48fc7f45123bc244531b19dc7fdfc48ede13fb18772ad113af2cd047aa5d4c0"
+      sha256 "aa2ea0d506f8c03bb0496d3a34408876af62bce5e1316b09111a334f4760445f"
     end
     on_intel do
       url "#{base}-x86_64-unknown-linux-gnu.tar.gz"
-      sha256 "650754573df2585a73fa440ef91a86389393c5cd5aef05dc29142aa5bf3b36d1"
+      sha256 "555552b3401d5feebb6d843c602d0c17aac90fe7674dbd5f4b182e4b175099f8"
     end
   end
 
